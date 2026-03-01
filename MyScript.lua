@@ -15,8 +15,8 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 220, 0, 150)
-frame.Position = UDim2.new(0.5, -110, 0.55, -75)
+frame.Size = UDim2.new(0, 220, 0, 200)
+frame.Position = UDim2.new(0.5, -110, 0.55, -100)
 frame.BackgroundColor3 = Color3.fromRGB(25,25,25)
 frame.Active = true
 frame.Draggable = true
@@ -42,18 +42,76 @@ closeBtn.BackgroundColor3 = Color3.fromRGB(170,0,0)
 closeBtn.TextColor3 = Color3.new(1,1,1)
 closeBtn.Parent = frame
 
--- Toggle Switch Background
+-- TELEPORT DROPDOWN BUTTON
+local openTeleportsBtn = Instance.new("TextButton")
+openTeleportsBtn.Size = UDim2.new(1, -20, 0, 30)
+openTeleportsBtn.Position = UDim2.new(0, 10, 0, 45)
+openTeleportsBtn.Text = "Open Teleports ▼"
+openTeleportsBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+openTeleportsBtn.TextColor3 = Color3.new(1,1,1)
+openTeleportsBtn.Parent = frame
+
+-- Dropdown Frame
+local teleportFrame = Instance.new("Frame")
+teleportFrame.Size = UDim2.new(1, -20, 0, 0)
+teleportFrame.Position = UDim2.new(0, 10, 0, 80)
+teleportFrame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+teleportFrame.ClipsDescendants = true
+teleportFrame.Parent = frame
+
+local layout = Instance.new("UIListLayout")
+layout.Parent = teleportFrame
+layout.Padding = UDim.new(0,5)
+
+local dropdownOpen = false
+
+local function makeTeleport(name, position)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(1, 0, 0, 30)
+	btn.Text = name
+	btn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+	btn.TextColor3 = Color3.new(1,1,1)
+	btn.Parent = teleportFrame
+	
+	btn.MouseButton1Click:Connect(function()
+		local hrp = getHRP()
+		hrp.CFrame = CFrame.new(position)
+	end)
+end
+
+-- YOUR TELEPORTS
+makeTeleport("Farm Start", Vector3.new(551.34, 41.28, 3583.16))
+makeTeleport("Tween End", Vector3.new(508.77, 42.28, 3579.88))
+makeTeleport("Spawn", Vector3.new(0, 10, 0)) -- change if needed
+
+openTeleportsBtn.MouseButton1Click:Connect(function()
+	dropdownOpen = not dropdownOpen
+	
+	if dropdownOpen then
+		openTeleportsBtn.Text = "Close Teleports ▲"
+		local count = 0
+		for _,v in pairs(teleportFrame:GetChildren()) do
+			if v:IsA("TextButton") then
+				count += 1
+			end
+		end
+		teleportFrame:TweenSize(UDim2.new(1, -20, 0, count * 35), "Out", "Quad", 0.25, true)
+	else
+		openTeleportsBtn.Text = "Open Teleports ▼"
+		teleportFrame:TweenSize(UDim2.new(1, -20, 0, 0), "Out", "Quad", 0.25, true)
+	end
+end)
+
+-- Toggle Switch
 local toggleBg = Instance.new("Frame")
 toggleBg.Size = UDim2.new(0, 80, 0, 35)
-toggleBg.Position = UDim2.new(0.5, -40, 0.6, 0)
+toggleBg.Position = UDim2.new(0.5, -40, 1, -50)
 toggleBg.BackgroundColor3 = Color3.fromRGB(170,0,0)
 toggleBg.Parent = frame
-toggleBg.Name = "Toggle"
 
 local toggleCorner = Instance.new("UICorner", toggleBg)
 toggleCorner.CornerRadius = UDim.new(1,0)
 
--- Toggle Circle
 local toggleCircle = Instance.new("Frame")
 toggleCircle.Size = UDim2.new(0, 30, 0, 30)
 toggleCircle.Position = UDim2.new(0, 3, 0.5, -15)
@@ -97,7 +155,7 @@ noBtn.BackgroundColor3 = Color3.fromRGB(170,0,0)
 noBtn.TextColor3 = Color3.new(1,1,1)
 noBtn.Parent = confirmFrame
 
--- Logic
+-- Auto Farm Logic
 local toggled = false
 local currentTween
 
@@ -111,7 +169,7 @@ local function autoLoop()
 		if not toggled then break end
 
 		local goal = {CFrame = CFrame.new(508.77, 42.28, 3579.88)}
-		local tweenInfo = TweenInfo.new(0.75, Enum.EasingStyle.Linear)
+		local tweenInfo = TweenInfo.new(0.375, Enum.EasingStyle.Linear) -- 2x faster
 
 		currentTween = TweenService:Create(hrp, tweenInfo, goal)
 		currentTween:Play()
